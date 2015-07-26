@@ -55,7 +55,7 @@ def get_info_step1(programId):
     ev = soup.find('input', {'id' : '__EVENTVALIDATION'})['value']
     return viewstate,ev
 #get  "__EVENTVALIDATION", "__VIEWSTATE" from textyq
-ef get_info_step2(programId,txtyq):
+def get_info_step2(programId,txtyq):
     info = get_info_step1(programId)
     data={
            " __EVENTTARGET":"txtyq",
@@ -99,15 +99,35 @@ def hust_query(programId,txtyq,txtld,Txtroom):
     html_data=(response.read()).decode("utf-8")
     pattern = re.compile(r'<input name="TextBox3".*?type="text".*?value="(.*)".*?readonly="readonly".*?id="TextBox3".*?/> ',re.S)
     match = pattern.search(html_data)
+    
     pattern2 = re.compile(r'<input name="TextBox2" type="text" value="(.*)" readonly="readonly" id="TextBox2" />',re.S)
     match2 = pattern2.search(html_data) 
-
-
+    
+    pattern3 = re.compile(r'\s<td>(\d*\.\d*)</td><td>(\d*-\d*.*)</td>')
+    store=[]
+    for m in pattern3.finditer(html_data):
+        store.append(m.group(1))
+    aver = caculate(store)
     if match:
         print ("您的剩余电量:",match.group(1))
         print ("最后一次抄表时间:",match2.group(1))
+        print ("您一天平均耗电:",aver)
+        print ("按照当前速度，您一个月大约耗电:",aver*30)
+        print ("预测你一个月需要交的电费为:",aver*3000/168)
+        print ("预测你一个学期需要交的电费为:",aver*14000/168)
     else:
         print ("错误,请检查输入")
+
+def caculate(store):
+    sum=0
+    for i in range(1,7):
+        sum+=float(store[i])-float(store[i-1])
+    aver = sum/6
+    return aver
+
+
+
+
 
 #get the info
 p1 = str(input(u'请输入楼栋区域(如“东区”)：\n'))  
