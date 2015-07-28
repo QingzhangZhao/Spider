@@ -120,9 +120,12 @@ def hust_query(programId,txtyq,txtld,Txtroom):
 
 def caculate(store):
     sum=0
+    count=0
     for i in range(1,7):
-        sum+=float(store[i])-float(store[i-1])
-    aver = sum/6
+        if (float(store[i])-float(store[i-1]))>0:
+            sum+=float(store[i])-float(store[i-1])
+            count+=1
+    aver = sum/count
     return aver
 
 
