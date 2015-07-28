@@ -26,6 +26,21 @@ request.add_header('HTTP_ACCEPT','text/html,application/xhtml+xml,application/xm
 request.add_header('Referer:http','//202.114.18.218/main.aspx')
 request.add_header('Content-Type','application/x-www-form-urlencoded')
 
+pattern = re.compile(r'<input name="TextBox3".*?type="text".*?value="(.*)".*?readonly="readonly".*?id="TextBox3".*?/> ',re.S)
+pattern2 = re.compile(r'<input name="TextBox2" type="text" value="(.*)" readonly="readonly" id="TextBox2" />',re.S)
+pattern3 = re.compile(r'\s<td>(\d*\.\d*)</td><td>(\d*-\d*.*)</td>')
+
+info2_9=[]
+info2_10=[]
+info2_11=[]
+info2_12=[]
+info2_13=[]
+
+_Total=0.0
+_Count=0
+_Txtyq="沁苑东九舍"
+_Txtroom="101"
+_Cost=0
 
 
 #get  "__EVENTVALIDATION", "__VIEWSTATE" from programId
@@ -78,11 +93,6 @@ def get_info_step2(programId,txtyq):
     ev = soup.find('input', {'id' : '__EVENTVALIDATION'})['value']
     return viewstate,ev
 
-info2_9=[]
-info2_10=[]
-info2_11=[]
-info2_12=[]
-info2_13=[]
 for i in range(1,6):
     if  i==1:
         info2_9=get_info_step2("东区","沁苑东九舍")
@@ -94,7 +104,6 @@ for i in range(1,6):
         info2_12=get_info_step2("东区","沁苑东十二舍")
     elif i==5:
         info2_13=get_info_step2("东区","沁苑东十三舍")
-
 
 #get the result
 def hust_query(programId,txtyq,txtld,Txtroom):
@@ -108,7 +117,6 @@ def hust_query(programId,txtyq,txtld,Txtroom):
         info=info2_12
     elif txtyq=="沁苑东十三舍":
         info=info2_13
-
 
 
     data={
@@ -128,36 +136,59 @@ def hust_query(programId,txtyq,txtld,Txtroom):
     }
     response = urllib.request.urlopen(request,urllib.parse.urlencode(data).encode('utf-8'))
     html_data=(response.read()).decode("utf-8")
-    pattern = re.compile(r'<input name="TextBox3".*?type="text".*?value="(.*)".*?readonly="readonly".*?id="TextBox3".*?/> ',re.S)
     match = pattern.search(html_data)
-    
-    pattern2 = re.compile(r'<input name="TextBox2" type="text" value="(.*)" readonly="readonly" id="TextBox2" />',re.S)
-    match2 = pattern2.search(html_data) 
-    
-    pattern3 = re.compile(r'\s<td>(\d*\.\d*)</td><td>(\d*-\d*.*)</td>')
-    #store=[]
-    #for m in pattern3.finditer(html_data):
-    #    store.append(m.group(1))
-    #aver = caculate(store)
-    if match:
-        print (Txtroom,"您的剩余电量:",match.group(1))
-     #   print ("最后一次抄表时间:",match2.group(1))
-    #    print ("您一天平均耗电:",aver)
-     #   print ("按照当前速度，您一个月大约耗电:",aver*30)
-      #  print ("预测你一个月需要交的电费为:",aver*3000/168)
-       # print ("预测你一个学期需要交的电费为:",aver*14000/168)
-    else:
-        print (Txtroom,"无该仪表信息")
+    #match2 = pattern2.search(html_data) 
+    store=[]
+    for m in pattern3.finditer(html_data):
+        store.append(m.group(1))
+    global _Total 
+    global _Count 
+    global _Cost
+    global _Txtyq
+    global _Txtroom
+    if store:
+        aver = caculate(store)
+        if aver>0.3:
+            _Total += aver
+            _Count += 1
+            if aver > _Cost:
+                _Cost=aver
+                _Txtyq=txtyq
+                _Txtroom=Txtroom
 
+    if match:
+       # print (txtyq,Txtroom,"您的剩余电量:",match.group(1))
+        #print ("最后一次抄表时间:",match2.group(1))
+        #print ("您一天平均耗电:",aver)
+        if aver:
+            if aver<0.3:
+                print (txtyq,Txtroom,"宿舍无人")
+        #print ("按照当前速度，您一个月大约耗电:",aver*30)
+        #print ("预测你一个月需要交的电费为:",aver*3000/168)
+        #print ("预测你一个学期需要交的电费为:",aver*14000/168)
+    else:
+        pass
+        #print (txtyq,Txtroom,"无该仪表信息")
+
+#caculate the power cosumtion
 def caculate(store):
     sum=0
+    count=0
     for i in range(1,7):
-        sum+=float(store[i])-float(store[i-1])
-    aver = sum/6
+        if(float(store[i])-float(store[i-1]))>=0:
+            sum+=float(store[i])-float(store[i-1])
+            count+=1
+    aver = sum/count
     return aver
 
-
-
+def caculate_global(total,count):
+    aver = total/count
+    global _Cost
+    global _Txtyq
+    global _Txtroom
+    print ("沁苑平均一天用电消耗:",aver)
+    print ("最土豪寝室:",_Txtyq,_Txtroom,"平均一天用电:",_Cost)
+    return aver
 
 
 #get the info
@@ -179,7 +210,8 @@ for i in range(1,6):
             elif i==3:
                 p2="沁苑东十一舍"
             elif i==4:
-                p2=="沁苑东十二舍"
+                p2="沁苑东十二舍"
             elif i==5:
-                p2=="沁苑东十三舍"
+                p2="沁苑东十三舍"
             hust_query("东区",p2,p3,p4)
+caculate_global(_Total,_Count)
