@@ -17,6 +17,7 @@ import urllib.error
 import string
 import urllib.parse
 import re
+import os
 from bs4 import BeautifulSoup
 
 #init global request
@@ -186,10 +187,18 @@ def caculate_global(total,count):
     global _Cost
     global _Txtyq
     global _Txtroom
-    print ("沁苑平均一天用电消耗:",aver)
+    print ("该楼平均一天用电消耗:",aver)
     print ("最土豪寝室:",_Txtyq,_Txtroom,"平均一天用电:",_Cost)
     return aver
 
+def run(str):
+    for j in range(1,7):
+            for k in range(1,33):
+                p3 = j
+                p4 = p3*100+k
+                p2=str
+                hust_query("东区",p2,p3,p4)
+    caculate_global(_Total,_Count)
 
 #get the info
 #p1 = str(input(u'请输入楼栋区域(如“东区”)：\n'))  
@@ -198,20 +207,36 @@ def caculate_global(total,count):
 #p4 = int(input(u'请输入房间号(如”104“)：\n')) 
 
 #start
-for i in range(1,6):
-    for j in range(1,7):
-        for k in range(1,33):
-            p3 = j
-            p4 = p3*100+k
-            if  i==1:
-                p2="沁苑东九舍"
-            elif i==2:
-                p2="沁苑东十舍"
-            elif i==3:
-                p2="沁苑东十一舍"
-            elif i==4:
-                p2="沁苑东十二舍"
-            elif i==5:
-                p2="沁苑东十三舍"
-            hust_query("东区",p2,p3,p4)
-caculate_global(_Total,_Count)
+#for i in range(1,6):
+#    for j in range(1,7):
+#        for k in range(1,33):
+#            p3 = j
+#            p4 = p3*100+k
+#            if  i==1:
+#                p2="沁苑东九舍"
+#            elif i==2:
+#                p2="沁苑东十舍"
+#            elif i==3:
+#                p2="沁苑东十一舍"
+#            elif i==4:
+#                p2="沁苑东十二舍"
+#            elif i==5:
+#                p2="沁苑东十三舍"
+#            hust_query("东区",p2,p3,p4)
+pid = os.fork()
+if pid == 0:
+    pid2 = os.fork()
+    if pid2 ==0:
+        run("沁苑东九舍")
+    else:
+        run("沁苑东十舍")
+else:
+    pid3=os.fork()
+    if pid3==0:
+        run("沁苑东十一舍")
+    else:
+        pid4=os.fork()
+        if pid4==0:
+            run("沁苑东十二舍")
+        else:
+            run("沁苑东十三舍")
