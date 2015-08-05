@@ -1,17 +1,8 @@
 # -*- coding: utf-8 -*-  
-#---------------------------------------  
-#   程序：华科电费系统爬虫 
-#   版本：0.1
-#   作者：zqz  
-#   日期：2015-07-26  
-#   语言：Python 3.4  
-#   操作：输入所在的地理位置 
-#   功能：用电查询。  
-#---------------------------------------  
+#Author: QingzhangZhao <zhaoqingzhanghust@gmail.com>
 
 
-
-
+import argparse
 import urllib.request
 import urllib.error
 import string
@@ -128,15 +119,15 @@ def caculate(store):
     aver = sum/count
     return aver
 
+parser = argparse.ArgumentParser(prog="hust_electricity_query",description="The %(prog)s program is used to query the electricity of hust",epilog="Just for fun")
+parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+parser.add_argument('-i',nargs="?",dest="programId",choices=['东区','西区','韵苑二期','韵苑一期','紫菘'],required=True,help="选择区域")
+parser.add_argument('-y',nargs="?",dest="txtyq",required=True,help="楼号，如沁苑东十舍")
+parser.add_argument('-l',nargs="?",dest="txtld",required=True,help="楼层，如1层")
+parser.add_argument('-r',nargs="?",dest="txtroom",type=int,required=True,help="房间号，如101")
+args = parser.parse_args()
 
 
+if __name__=='__main__':
+    hust_query(args.programId,args.txtyq,args.txtld,args.txtroom)
 
-
-#get the info
-p1 = str(input(u'请输入楼栋区域(如“东区”)：\n'))  
-p2 = str(input(u'请输入楼号：(如”沁苑东十舍“)\n'))  
-p3 = str(input(u'请输入楼层号(如”1层“)：\n'))  
-p4 = int(input(u'请输入房间号(如”104“)：\n')) 
-
-#start
-hust_query(p1,p2,p3,p4)
