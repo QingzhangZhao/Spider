@@ -151,18 +151,11 @@ def hust_query(programId,txtyq,txtld,Txtroom):
                 _Txtroom=Txtroom
 
     if match:
-       # print (txtyq,Txtroom,"您的剩余电量:",match.group(1))
-        #print ("最后一次抄表时间:",match2.group(1))
-        #print ("您一天平均耗电:",aver)
         if aver:
             if aver<0.3:
                 print (txtyq,Txtroom,"宿舍无人")
-        #print ("按照当前速度，您一个月大约耗电:",aver*30)
-        #print ("预测你一个月需要交的电费为:",aver*3000/168)
-        #print ("预测你一个学期需要交的电费为:",aver*14000/168)
     else:
         pass
-        #print (txtyq,Txtroom,"无该仪表信息")
 
 #caculate the power cosumtion
 def caculate(store):
