@@ -1,16 +1,5 @@
 # -*- coding: utf-8 -*-  
-#---------------------------------------  
-#   程序：华科电费系统爬虫 
-#   版本：0.1
-#   作者：zqz  
-#   日期：2015-07-28  
-#   语言：Python 3.4  
-#   操作：运行，等待
-#   功能：计算沁苑平均用电,发现哪些宿舍没人，发现土豪。  
-#---------------------------------------  
-
-
-
+#Author: QingzhangZhao <zhaoqingzhanghust@gmail.com>
 
 import urllib.request
 import urllib.error
@@ -19,7 +8,11 @@ import urllib.parse
 import re
 import os
 from bs4 import BeautifulSoup
+import threading
+import queue
+import time
 
+q = queue.Queue(0)
 #init global request
 request = urllib.request.Request("http://202.114.18.218/main.aspx")
 request.add_header('User-Agent','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.12 Safari/537.36')
@@ -191,6 +184,20 @@ def caculate_global(total,count):
     print ("最土豪寝室:",_Txtyq,_Txtroom,"平均一天用电:",_Cost)
     return aver
 
+class Info():
+    def __init__(self,programId,txtyq,txtld,txtroom):
+        self._programId=programId
+        self._txtyq=txtyq
+        self._txtld=txtld
+        self._txtroom=txtroom
+
+def gen_queue(str):
+    for j in range(1,7):
+        for k in range(1,33):
+            p3 = j
+            p4 = p3*100+k
+            p2=str
+            q.put(Info("东区",p2,p3,p4))
 def run(str):
     for j in range(1,7):
             for k in range(1,33):
@@ -200,43 +207,28 @@ def run(str):
                 hust_query("东区",p2,p3,p4)
     caculate_global(_Total,_Count)
 
-#get the info
-#p1 = str(input(u'请输入楼栋区域(如“东区”)：\n'))  
-#p2 = str(input(u'请输入楼号：(如”沁苑东十舍“)\n'))  
-#p3 = str(input(u'请输入楼层号(如”1层“)：\n'))  
-#p4 = int(input(u'请输入房间号(如”104“)：\n')) 
+class Mythread(threading.Thread):
+    """Just for testing"""
+    def __init__(self,jobq):
+        threading.Thread.__init__(self,)
+        self._jobq=jobq
+    def run(self):
+        while True:
+            if self._jobq.qsize()>0:
+                info=self._jobq.get()
+                #print ("start at %s" %(time.ctime()))
+                hust_query(info._programId,info._txtyq,info._txtld,info._txtroom)
+            else:
+                break
 
-#start
-#for i in range(1,6):
-#    for j in range(1,7):
-#        for k in range(1,33):
-#            p3 = j
-#            p4 = p3*100+k
-#            if  i==1:
-#                p2="沁苑东九舍"
-#            elif i==2:
-#                p2="沁苑东十舍"
-#            elif i==3:
-#                p2="沁苑东十一舍"
-#            elif i==4:
-#                p2="沁苑东十二舍"
-#            elif i==5:
-#                p2="沁苑东十三舍"
-#            hust_query("东区",p2,p3,p4)
-pid = os.fork()
-if pid == 0:
-    pid2 = os.fork()
-    if pid2 ==0:
-        run("沁苑东九舍")
-    else:
-        run("沁苑东十舍")
-else:
-    pid3=os.fork()
-    if pid3==0:
-        run("沁苑东十一舍")
-    else:
-        pid4=os.fork()
-        if pid4==0:
-            run("沁苑东十二舍")
-        else:
-            run("沁苑东十三舍")
+def get_queue():
+    gen_queue("沁苑东九舍")
+    gen_queue("沁苑东十舍")
+    gen_queue("沁苑东十一舍")
+    gen_queue("沁苑东十二舍")
+    gen_queue("沁苑东十三舍")
+
+if __name__=='__main__':
+    get_queue()
+    for x in range(100):
+        Mythread(q).start()
